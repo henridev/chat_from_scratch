@@ -38,18 +38,13 @@ function handleWorkerExit(worker, code, signal) {
 function handleWSSConnection(wss) {
   wss.id = counter++;
   wssConnections[wss.id] = wss;
-  console.log("wssConnection[wss.id]", wssConnections[wss.id]);
   wss.on("message", function incoming(message) {
     const jsonmsg = JSON.parse(message);
-    console.log("message", message);
     const currentConnection = wssConnections[wss.id];
     if (!currentConnection.name) {
       currentConnection.name = jsonmsg.username;
-      console.log("currentConnection", currentConnection);
-      console.log("wss.id", wss.id);
       sendUserJoined(wss.id);
     } else {
-      console.log("here");
       sendAll(jsonmsg.message, wss.id);
     }
   });
@@ -59,8 +54,12 @@ function sendUserJoined(Id) {
   for (let i = 0; i < Object.keys(wssConnections).length; i++) {
     const wssConnection = wssConnections[i];
     if (Id !== wssConnection.id) {
-      console.log("Id", Id);
-      wssConnection.send(`${wssConnections[Id].name} ---- joined chat`);
+      wssConnection.send(
+        JSON.stringify({
+          username: wssConnections[Id].name,
+          message: "new join",
+        })
+      );
     }
   }
 }
@@ -69,9 +68,11 @@ function sendAll(message, Id) {
   const username = wssConnections[Id].name;
   for (let i = 0; i < Object.keys(wssConnections).length; i++) {
     const wssConnection = wssConnections[i];
-    if (Id !== wssConnection.id) {
-      wssConnection.send(`${username} says ----> ${message}`);
-    }
+    // if (Id !== wssConnection.id) {
+    wssConnection.send(
+      JSON.stringify({ username: username, message: message })
+    );
+    // }
   }
 }
 

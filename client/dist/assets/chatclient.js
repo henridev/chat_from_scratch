@@ -1,24 +1,65 @@
-const connection = new WebSocket("ws://127.0.0.1:1337");
+let connection;
+let currentMessage = "";
+let inputfield;
+let sendButton;
+let chatbox;
+const username = document.getElementById("username");
+const joinbutton = document.getElementById("joinbutton");
 
-connection.onopen = function () {
-  // connection is opened and ready to use
+joinbutton.addEventListener("click", (e) => {
+  const chosenName = username.value || "unknown";
+  connection = new WebSocket("ws://127.0.0.1:1337");
+  connection.onopen = function () {
+    destroyjoinElements();
+    createChatElements();
+    connection.send(
+      JSON.stringify({
+        firstConnection: true,
+        username: chosenName,
+      })
+    );
+    inputfield.disabled = false;
+  };
 
-  connection.send("here is some text for the server");
-};
+  connection.onerror = function (error) {
+    // an error occurred when sending/receiving data
+  };
 
-connection.onerror = function (error) {
-  // an error occurred when sending/receiving data
-};
+  connection.onmessage = function (info) {
+    const { username, message } = JSON.parse(info.data);
+    if (message === "new join") {
+      chatbox.innerText += `\n new user joined ${username} 👋👋👋`;
+      return;
+    }
+    chatbox.innerText += `\n ${username} says ${message}`;
+  };
+});
 
-connection.onmessage = function (message) {
-  // try to decode json (I assume that each message
-  // from server is json)
-  console.log("message", message);
-  try {
-    var json = JSON.parse(message.data);
-  } catch (e) {
-    console.log("This doesn't look like a valid JSON: ", message.data);
-    return;
-  }
-  // handle incoming message
-};
+function destroyjoinElements() {
+  username.parentNode.removeChild(username);
+  joinbutton.parentNode.removeChild(joinbutton);
+}
+
+function createChatElements() {
+  sendButton = document.createElement("button");
+  sendButton.innerText = "send message";
+  sendButton.addEventListener("click", (e) =>
+    connection.send(
+      JSON.stringify({
+        message: currentMessage,
+      })
+    )
+  );
+
+  inputfield = document.createElement("input");
+  inputfield.addEventListener(
+    "keyup",
+    (e) => (currentMessage = e.target.value)
+  );
+
+  chatbox = document.createElement("div");
+
+  document.body.appendChild(chatbox);
+  document.body.appendChild(inputfield);
+  document.body.appendChild(sendButton);
+}
