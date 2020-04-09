@@ -1,5 +1,6 @@
 const cluster = require("cluster");
 const os = require("os");
+const WebSocket = require("ws");
 
 if (cluster.isMaster) {
   const cpuCount = os.cpus().length;
@@ -15,6 +16,16 @@ if (cluster.isMaster) {
   console.log("cpus", cpuCount);
   //#endregion
   cluster.on("exit", handleWorkerExit);
+
+  //#region set up a single tcp server
+  //   require("./tcpchatserver");
+  /*
+    this will be a server that is created once while the loads for the http will be 
+    distributed accross the x created processes 
+  */
+  //#endregion
+
+  const wss = new WebSocket.Server({ port: 1337 });
 } else {
   require("./servernode");
 }

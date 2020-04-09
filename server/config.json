@@ -1,6 +1,7 @@
 {
   "host": "127.0.0.1",
   "port": 8080,
+  "tcpport": 8090,
   "routes": {
     "homepage": "/home",
     "chatgroup": "/chatgroup"

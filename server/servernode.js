@@ -1,17 +1,23 @@
 const http = require("http"),
   config = require("./config"),
-  net = require("net"),
-  { spawn } = require("child_process"),
-  routeHandler = require("./routes/routehandler"),
-  path = require("path"),
-  fs = require("fs");
+  routeHandler = require("./routes/routehandler");
+// net = require("net");
+// { spawn } = require("child_process"),
+// path = require("path"),
+// fs = require("fs");
 
+//#region HTTP server creation
 const server = http.createServer();
 
 server.on("request", (req, res) => {
   const pathname = req.url;
   routeHandler(pathname, req, res);
 });
+
+server.listen(config.port, config.host, () =>
+  console.log(`listening to port ${config.port} \n process ID: ${process.pid}`)
+);
+//#endregion END HTTP server
 
 //#region childprocess
 // child process will allow us to execute commands in the OS
@@ -31,7 +37,3 @@ server.on("request", (req, res) => {
 //   console.log(`child process exited with code ${code}`);
 // });
 //#endregion
-
-server.listen(config.port, config.host, () =>
-  console.log(`listening to port ${config.port} \n process ID: ${process.pid}`)
-);
